@@ -16,7 +16,30 @@ require 'sinatra/base'
 
 class AChatWithSinatra < Sinatra::Base
 
-  # ...
+  set state: { channels: {} }
+
+  def channel(c)
+    settings.state[:channels][c] ||= []
+  end
+
+  get '/channels' do
+    content_type :json
+    settings.state[:channels].keys.sort.to_json
+  end
+
+  get '/messages/:channel' do |c|
+    content_type 'text/event-stream'
+    stream(:keep_open) do |out|
+      channel(c) << out
+      out.callback { channel(c).delete out }
+    end
+  end
+
+  if ENV['ACHATWITHSINATRA_CUKE'] == 'yes'
+    post '/reset' do
+      settings.state[:channels] = {}
+    end
+  end
 
 end
 
