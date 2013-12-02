@@ -1,6 +1,6 @@
 require 'capybara/cucumber'
 require 'childprocess'
-require 'em-http-request'
+require 'em-http'
 require 'faraday'
 require 'timeout'
 
@@ -34,7 +34,7 @@ module Helpers                                                  # {{{1
     @listeners ||= {}
   end
 
-  def listen(path, id, timeout = 5)                             # {{{2
+  def listen(path, id, timeout = 1)                             # {{{2
     r, w = IO.pipe
     if pid = fork
       listeners[id] = { pid: pid, r: r }
