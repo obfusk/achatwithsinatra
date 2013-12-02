@@ -35,6 +35,14 @@ class AChatWithSinatra < Sinatra::Base
     end
   end
 
+  post '/say/:channel' do |c|
+    data = JSON.parse request.body.read
+    channel(c).each do |out|
+      out << "event: say\ndata: #{data.to_json}\n\n"
+    end
+    ''
+  end
+
   if ENV['ACHATWITHSINATRA_CUKE'] == 'yes'
     post '/reset' do
       settings.state[:channels] = {}

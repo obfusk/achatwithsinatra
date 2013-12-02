@@ -9,7 +9,7 @@ require './achatwithsinatra'
 port    = ENV['PORT'] && !ENV['PORT'].blank? ? ENV['PORT'] : 9999
 server  = ChildProcess.build *%W{ rackup -p #{port} }
 server.environment['ACHATWITHSINATRA_CUKE'] = 'yes'
-# server.io.inherit!
+server.io.inherit! if ENV['INHERIT_IO'] == 'yes'
 server.start
 at_exit { server.stop }
 
@@ -25,26 +25,58 @@ Timeout.timeout(3) do
 end
 
 module Helpers                                                  # {{{1
+
   def host
     "http://localhost:#{@port}"
   end
+
+  def listeners
+    @listeners ||= {}
+  end
+
+  def listen(path, id, timeout = 5)                             # {{{2
+    r, w = IO.pipe
+    if pid = fork
+      listeners[id] = { pid: pid, r: r }
+      w.close
+      r.readline # wait for OK
+    else
+      r.close
+      body = ''
+      EM.run do
+        http = EM::HttpRequest.new(
+          "#{host}/#{path}", inactivity_timeout: timeout
+        ).get redirects: 5
+        http.errback { raise 'OOPS' }
+        http.stream { |c| body << c }
+        http.callback { EM.stop }
+        w.write "OK\n"
+      end
+      w.write body
+      w.close
+      exit!
+    end
+  end                                                           # }}}2
+
+  def waitfor(id)
+    data = listeners[id][:r].read
+    listeners[id][:r].close
+    Process.wait listeners[id][:pid]
+    listeners.delete id
+    data
+  end
+
   def get(path)
     Faraday.get "#{host}/#{path}"
   end
-  def aget(path, n = 1)
-    body = ''
-    EM.run do
-      http = EM::HttpRequest.new(
-        "#{host}/#{path}", inactivity_timeout: n
-      ).get redirects: 5
-      http.stream { |c| body << c }
-      http.callback { EM.stop }
+
+  def post(path, data = nil)
+    Faraday.post "#{host}/#{path}" do |req|
+      req.headers['Content-Type'] = 'application/json'
+      req.body = data
     end
-    body
   end
-  def post(path)
-    Faraday.post "#{host}/#{path}"
-  end
+
 end                                                             # }}}1
 
 World do
