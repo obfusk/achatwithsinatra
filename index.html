@@ -92,11 +92,11 @@ $ nc -C localhost 4567
 $ curl -v localhost:4567/hi
 ```
 
-* chromium/firefox developer tools
+See also the chromium/firefox developer tools.
 
 ---
 
-# HTTP Methods / REST
+# HTTP Methods and REST
 
 ```ruby
 get '/' do
@@ -118,15 +118,27 @@ end
 
 ---
 
-# Routes
+# Routes, Views, Templates
 
 ```ruby
-...
+get '/hello/:name' do |n|
+  "Hello #{n}!"
+end
 ```
 
----
+```ruby
+get '/' do
+  haml :index
+end
+```
 
-...
+```ruby
+get '/' do
+  erb 'The time is: <%= Time.now %>'
+end
+```
+
+Static files served from `public` folder.
 
 ---
 
@@ -136,9 +148,69 @@ end
 
 ---
 
-## Links
+# Rack
 
-* http://obfusk.org/achatwithsinatra
+```ruby
+run -> env { [200, {}, ['Hello, Rack!', "\n"]] }
+```
+
+```
+run -> env {
+  req = Rack::Request.new env
+  Rack::Response.new.finish do |res|
+    res['Content-Type'] = 'text/plain'
+    res.status = 200
+    res.write "Parameters sent: #{req.params.inspect}\n"
+  end
+}
+```
+
+```
+$ curl "localhost:9292?foo=42&bar=37"
+Parameters sent: {"foo"=>"42", "bar"=>"37"}
+
+$ curl -X POST localhost:9292 -d 'this=awesome'
+Parameters sent: {"this"=>"awesome"}
+```
+
+You can use `config.ru` and `rackup`.
+
+---
+
+...
+
+---
+
+# Ubuntu, Ruby, Environment, Gems, Bundler
+
+```
+$ sudo aptitude install git ruby1.9.1-full
+
+$ update-alternatives --config ruby   # to set default ruby
+$ update-alternatives --config gem    # and gem
+
+$ export GEM_HOME="$HOME/.gem/ruby/1.9.1"
+$ export PATH="$GEM_HOME/bin:$PATH"
+
+$ gem install bundler
+```
+
+```
+$ git clone https://github.com/obfusk/achatwithsinatra.git
+$ cd achatwithsinatra
+$ bundle
+$ rackup -p 8888
+```
+
+```
+$ xdg-open http://localhost:8888
+```
+
+---
+
+# Links
+
+* http://obfusk.github.io/achatwithsinatra
 * https://github.com/obfusk/achatwithsinatra
 
 <!-- -->
