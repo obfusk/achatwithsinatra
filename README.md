@@ -2,7 +2,7 @@
 
     File        : README.md
     Maintainer  : Felix C. Stegerman <flx@obfusk.net>
-    Date        : 2013-12-02
+    Date        : 2013-12-03
 
     Copyright   : Copyright (C) 2013  Felix C. Stegerman
     Version     : v0.0.1
@@ -14,17 +14,23 @@
 
   achatwithsinatra - a simple sinatra chat app
 
-  achatwithsinatra is a simple chat app build w/ sinatra and
-  coffeescript, using server-sent events to communicate events from
+  achatwithsinatra is a simple chat app built w/ sinatra, haml, and
+  coffeescript; it uses server-sent events to communicate events from
   the server to the client.
+
+  Building this app is the demonstration part of my
+  [sinatra presentation] (http://obfusk.github.io/achatwithsinatra).
+
+  It's also running on
+  [heroku] (http://achatwithsinatra.herokuapp.com).
 
 []: }}}1
 
 ## Specs & Docs
 
     $ rake cuke
-    $ rake spec
-    $ rake docs
+    $ rake spec     # TODO
+    $ rake jasmine  # TODO
 
 ## TODO
 
