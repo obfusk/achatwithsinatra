@@ -12,11 +12,41 @@
   <body>
     <textarea id="source">
 
-# Slide 1
+class: center, middle
 
-This is slide #1.
+# A Chat with Sinatra
+
+Felix C. Stegerman `<flx@obfusk.net>`
 
 ---
+
+```ruby
+require 'sinatra'
+
+get '/hi' do
+  "Hello World!\n"
+end
+```
+
+```
+$ gem install sinatra
+$ ruby hi.rb
+== Sinatra/1.4.4 has taken the stage on 4567 ...
+Listening on localhost:4567, CTRL+C to stop
+```
+
+```
+$ curl localhost:4567/hi
+Hello World!
+```
+
+---
+
+...
+
+---
+
+class: center, middle
 
 ![](rack.svg)
 
@@ -24,7 +54,8 @@ This is slide #1.
 
 ## Links
 
-* ...
+* http://obfusk.org/achatwithsinatra
+* https://github.com/obfusk/achatwithsinatra
 * http://www.sinatrarb.com
 * http://rubylearning.com/blog/a-quick-introduction-to-rack
 * http://rack.rubyforge.org/doc/SPEC.html
