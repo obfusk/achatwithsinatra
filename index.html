@@ -20,6 +20,32 @@ Felix C. Stegerman `<flx@obfusk.net>`
 
 ---
 
+# What is Sinatra?
+
+According to Wikipedia:
+
+> Sinatra is a free and open source software web application library
+and domain-specific language written in Ruby. It is an alternative to
+other Ruby web application frameworks such as Ruby on Rails, Merb,
+Nitro and Camping. It is dependent on the Rack web server interface.
+
+> Designed and developed by Blake Mizerany, Sinatra is small and
+flexible. It does not follow the typical model-view-controller pattern
+used in other frameworks, such as Ruby on Rails. Instead, Sinatra
+focuses on "quickly creating web-applications in Ruby with minimal
+effort."
+
+Other micro frameworks inspired by Sinatra:
+
+* compojure (clojure)
+* express (javascript, node.js)
+* flash (python)
+* scalatra (scala)
+
+---
+
+# What does Sinatra look like?
+
 ```ruby
 require 'sinatra'
 
@@ -42,11 +68,69 @@ Hello World!
 
 ---
 
+# Some HTTP
+
+```
+# input prefixed with/ "> ", output w/ "< "
+$ nc -C localhost 4567
+> GET /hi HTTP/1.1
+>
+< HTTP/1.1 200 OK
+< Content-Type: text/html;charset=utf-8
+< Content-Length: 13
+< X-XSS-Protection: 1; mode=block
+< X-Content-Type-Options: nosniff
+< X-Frame-Options: SAMEORIGIN
+< Connection: keep-alive
+< Server: thin 1.6.1 codename Death Proof
+<
+< Hello World!
+^D
+```
+
+```
+$ curl -v localhost:4567/hi
+```
+
+* chromium/firefox developer tools
+
+---
+
+# HTTP Methods / REST
+
+```ruby
+get '/' do
+  # show a resource
+end
+
+post '/' do
+  # submit data (e.g. form) or create a resource
+end
+
+put '/' do
+  # create or update a resource
+end
+
+delete '/' do
+  # destroy a resource
+end
+```
+
+---
+
+# Routes
+
+```ruby
+...
+```
+
+---
+
 ...
 
 ---
 
-class: center, middle
+# Sinatra, Rack, ...
 
 ![](rack.svg)
 
@@ -56,9 +140,19 @@ class: center, middle
 
 * http://obfusk.org/achatwithsinatra
 * https://github.com/obfusk/achatwithsinatra
+
+<!-- -->
+
 * http://www.sinatrarb.com
+* http://en.wikipedia.org/wiki/Sinatra_(software)
+
+<!-- -->
+
 * http://rubylearning.com/blog/a-quick-introduction-to-rack
 * http://rack.rubyforge.org/doc/SPEC.html
+
+<!-- -->
+
 * ...
 
     </textarea>
