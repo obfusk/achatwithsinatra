@@ -152,6 +152,7 @@ Static files served from `public` folder.
 
 ```ruby
 run -> env { [200, {}, ['Hello, Rack!', "\n"]] }
+# object.call(env) --> [status, headers, body]
 ```
 
 ```
@@ -177,7 +178,31 @@ You can use `config.ru` and `rackup`.
 
 ---
 
-...
+# Middleware
+
+```
+request --> middleware --> response
+
+request --> middleware --> app --> response
+
+request --> middleware --> response
+            `-> app -^
+```
+
+```ruby
+use Rack::Auth::Basic, "Restricted Area" do |username, password|
+  username == 'admin' and password == 'secret'
+end
+
+get '/' do
+  'You can only see this when logged in.'
+end
+
+get '/secret' do
+  'Welcome!'
+end
+
+```
 
 ---
 
@@ -222,10 +247,6 @@ $ xdg-open http://localhost:8888
 
 * http://rubylearning.com/blog/a-quick-introduction-to-rack
 * http://rack.rubyforge.org/doc/SPEC.html
-
-<!-- -->
-
-* ...
 
     </textarea>
     <script src="remark-0.5.9.min.js" type="text/javascript"></script>
