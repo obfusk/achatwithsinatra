@@ -40,6 +40,14 @@ module Helpers                                                  # {{{1
     "http://localhost:#{@port}"
   end
 
+  def events(str)
+    str.split("\n\n").map do |e|
+      m = /^event: (?<event>\w+)\ndata: (?<data>.*)$/.match(e) \
+            || raise('event stream parsing failure')
+      { event: m[:event], data: JSON.parse(m[:data]) }
+    end
+  end
+
   def listeners
     @listeners ||= {}
   end
@@ -52,9 +60,14 @@ module Helpers                                                  # {{{1
         http = EM::HttpRequest.new(
           "#{host}#{path}", inactivity_timeout: timeout
         ).get redirects: 5
-        http.errback { raise 'OOPS' }
         http.stream { |c| body << c }
-        http.callback { EM.stop }
+        http.errback { raise "listen (#{path}) failure" }
+        http.callback do
+          h = http.response_header
+          raise "listen (#{path}) status was #{h.status}" \
+            unless h.successful?
+          EM.stop
+        end
         w.write "OK\n"
       end
       w.write body; w.close; exit!  # no at_exit

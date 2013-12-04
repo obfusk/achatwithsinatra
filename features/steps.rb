@@ -15,13 +15,13 @@ When(%r{^I listen to `(/.*)` as `(.*)`$}) do |path, id|
 end
 
 When(/^I wait for listener `(.*)`$/) do |id|
-  (@messages ||= {})[id] = waitfor id
+  (@events ||= {})[id] = waitfor id
 end
 
 When(%r{^I post JSON to `(/.*)`:$}) do |path, json|
   post path, json
 end
 
-Then(/^The messages of `(.*)` should be:$/) do |id, str|
-  expect(@messages[id]).to eq(str)
+Then(/^The events of `(.*)` should be:$/) do |id, str|
+  expect(events(@events[id])).to eq(events(str))
 end
