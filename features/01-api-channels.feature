@@ -1,16 +1,24 @@
 Feature: api: channels
 
-  Scenario: I open 2 channels
+  Scenario: I join 2 channels
 
     When  I reset the server
-    And   I listen to `/events/foo` as `foo`
-    And   I listen to `/events/bar` as `bar`
+    And   I listen to `/events` as `foo`
+    And   I listen to `/events` as `bar`
+    And   I post JSON to `/join`:
+      """
+      { "id": "SecureRandom#1", "channel": "foo" }
+      """
+    And   I post JSON to `/join`:
+      """
+      { "id": "SecureRandom#2", "channel": "bar" }
+      """
     And   I wait for listener `foo`
     And   I wait for listener `bar`
     And   I request `/channels`
     Then  The JSON response should be:
       """
-      [ "bar", "foo" ]
+      [ "bar", "devnull", "foo" ]
       """
 
    Scenario: I don't open any channels

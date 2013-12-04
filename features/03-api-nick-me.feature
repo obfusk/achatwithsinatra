@@ -3,7 +3,7 @@ Feature: api: nick and me
   Scenario: I listen, me Waves
 
     When  I reset the server
-    When  I listen to `/events` as `devnull`
+    And   I listen to `/events` as `devnull`
     And   I post JSON to `/me`:
       """
       { "id": "SecureRandom#1", "message": "Waves" }
@@ -15,6 +15,9 @@ Feature: api: nick and me
       data: { "id": "SecureRandom#1", "nick": "guest1",
               "channel": "devnull" }
 
+      event: join
+      data: { "nick": "guest1", "channel": "devnull" }
+
       event: me
       data: { "nick": "guest1", "message": "Waves" }
       """
@@ -22,7 +25,7 @@ Feature: api: nick and me
   Scenario: I listen, change my nick, say Hello
 
     When  I reset the server
-    When  I listen to `/events` as `devnull`
+    And   I listen to `/events` as `devnull`
     And   I post JSON to `/nick`:
       """
       { "id": "SecureRandom#1", "nick": "felix" }
@@ -37,6 +40,9 @@ Feature: api: nick and me
       event: welcome
       data: { "id": "SecureRandom#1", "nick": "guest1",
               "channel": "devnull" }
+
+      event: join
+      data: { "nick": "guest1", "channel": "devnull" }
 
       event: nick
       data: { "from": "guest1", "to": "felix" }

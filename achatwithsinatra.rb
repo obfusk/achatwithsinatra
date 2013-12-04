@@ -17,8 +17,11 @@ require 'sinatra/base'
 
 class AChatWithSinatra < Sinatra::Base
 
-  DEBUG       = ENV['ACHATWITHSINATRA_CUKE'] == 'yes'
-  BLANK_STATE = -> { { channels: {}, users: {}, n: 0 } }
+  class UnknownUser < RuntimeError; end
+
+  BLANK_STATE     = -> { { channels: {}, users: {}, n: 0 } }
+  DEBUG           = ENV['ACHATWITHSINATRA_CUKE'] == 'yes'
+  DEFAULT_CHANNEL = 'devnull'
 
   set state: BLANK_STATE[]
 
@@ -34,6 +37,20 @@ class AChatWithSinatra < Sinatra::Base
     settings.state[:channels][c] ||= []
   end
 
+  def set_channel(user, c)
+    unless (old = user[:channel]) == c
+      user[:channel] = c
+      channel(old).delete user[:_out]
+      channel(c) << user[:_out]
+    end
+  end
+
+  def cleanup(user)
+    puts "cleaning up #{user.inspect}"
+    channel(user[:channel]).delete user[:_out]
+    settings.state[:users].delete user[:id]
+  end
+
   def send(out, event, data)
     out << "event: #{event}\ndata: #{data.to_json}\n\n"
   end
@@ -42,13 +59,13 @@ class AChatWithSinatra < Sinatra::Base
     channel(user[:channel]).each { |out| send out, event, msg }
   end
 
-  def new_user(c)
+  def new_user(c, out)
     n = settings.state[:n] += 1
-    { id: new_id(n), nick: "guest#{n}", channel: c }
+    { id: new_id(n), nick: "guest#{n}", channel: c, _out: out }
   end
 
   def get_user(id)
-    settings.state[:users][id] || raise("unknown id: #{id}")
+    settings.state[:users][id] || raise(UnknownUser, id)
   end
 
   def all_nicks
@@ -63,6 +80,10 @@ class AChatWithSinatra < Sinatra::Base
     else
       settings.state[:users][id][:nick] = nick; { nick: nick }
     end
+  end
+
+  def sanitize(h)
+    h.reject { |x| x.to_s.start_with? '_' }
   end
 
   if DEBUG
@@ -90,16 +111,21 @@ class AChatWithSinatra < Sinatra::Base
   end
 
   get '/events' do
-    redirect '/events/devnull'  # default channel
-  end
-
-  get '/events/:channel' do |c|
+    c = DEFAULT_CHANNEL
     content_type 'text/event-stream'
     stream(:keep_open) do |out|
-      channel(c) << out; out.callback { channel(c).delete out }
-      u = new_user c; settings.state[:users][u[:id]] = u
-      send out, :welcome, u
+      user = new_user c, out; settings.state[:users][user[:id]] = user
+      channel(c) << out; out.callback { cleanup user }
+      send out, :welcome, sanitize(user)
+      send_from user, :join, nick: user[:nick], channel: c
     end
+  end
+
+  post '/join' do
+    data = json_body; user = get_user data['id']
+    set_channel user, data['channel']
+    send_from user, :join, nick: user[:nick], channel: data['channel']
+    empty_response
   end
 
   post '/say' do
