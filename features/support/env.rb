@@ -55,12 +55,12 @@ module Helpers                                                  # {{{1
   def listen(path, id, timeout = 1)                             # {{{2
     r, w = IO.pipe
     pid = fork do
-      r.close; body = ''
+      r.close
       EM.run do
         http = EM::HttpRequest.new(
           "#{host}#{path}", inactivity_timeout: timeout
         ).get redirects: 5
-        http.stream { |c| body << c }
+        http.stream { |c| w.write c }
         http.errback { raise "listen (#{path}) failure" }
         http.callback do
           h = http.response_header
@@ -68,17 +68,17 @@ module Helpers                                                  # {{{1
             unless h.successful?
           EM.stop
         end
-        w.write "OK\n"
       end
-      w.write body; w.close; exit!  # no at_exit
+      w.close; exit!  # no at_exit
     end
-    listeners[id] = { pid: pid, r: r }
-    w.close; r.readline   # wait for OK
+    w.close; l = listeners[id] = { pid: pid, r: r }
+    # make sure we wait for first line (of welcome message)
+    l[:firstline] = r.readline
   end                                                           # }}}2
 
   def waitfor(id)
-    l = listeners[id]; data = l[:r].read; l[:r].close
-    Process.wait l[:pid]; listeners.delete id
+    l = listeners[id]; data = l[:firstline] + l[:r].read
+    l[:r].close; Process.wait l[:pid]; listeners.delete id
     data
   end
 

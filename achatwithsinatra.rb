@@ -17,6 +17,7 @@ require 'sinatra/base'
 
 class AChatWithSinatra < Sinatra::Base
 
+  DEBUG       = ENV['ACHATWITHSINATRA_CUKE'] == 'yes'
   BLANK_STATE = -> { { channels: {}, users: {}, n: 0 } }
 
   set state: BLANK_STATE[]
@@ -29,7 +30,7 @@ class AChatWithSinatra < Sinatra::Base
     out << "event: #{event}\ndata: #{data.to_json}\n\n"
   end
 
-  if ENV['ACHATWITHSINATRA_CUKE'] == 'yes'
+  if DEBUG
     def new_id(n)
       "SecureRandom##{n}"
     end
@@ -42,6 +43,16 @@ class AChatWithSinatra < Sinatra::Base
   def new_user
     n = settings.state[:n] += 1
     { id: new_id(n), nick: "guest#{n}" }
+  end
+
+  def get_nick(id)
+    settings.state[:users][id] || raise("unknown id: #{id}")
+  end
+
+  if DEBUG
+    before do
+      puts "state: #{settings.state.inspect}"
+    end
   end
 
   get '/channels' do
@@ -63,12 +74,13 @@ class AChatWithSinatra < Sinatra::Base
   end
 
   post '/say/:channel' do |c|
-    data = JSON.parse request.body.read
-    channel(c).each { |out| send out, :say, data }
+    data  = JSON.parse request.body.read
+    msg   = { nick: get_nick(data['id']), message: data['message'] }
+    channel(c).each { |out| send out, :say, msg }
     ''  # empty response
   end
 
-  if ENV['ACHATWITHSINATRA_CUKE'] == 'yes'
+  if DEBUG
     post '/reset' do
       settings.state = BLANK_STATE[]
       ''  # empty response
