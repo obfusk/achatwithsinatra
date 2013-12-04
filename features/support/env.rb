@@ -83,14 +83,18 @@ module Helpers                                                  # {{{1
   end
 
   def get(path)
-    Faraday.get "#{host}#{path}"
+    r = Faraday.get "#{host}#{path}"
+    raise "get (#{path}) status was #{r.status}" unless r.success?
+    r.body
   end
 
   def post(path, data = nil)
-    Faraday.post "#{host}#{path}" do |req|
+    r = Faraday.post "#{host}#{path}" do |req|
       req.headers['Content-Type'] = 'application/json'
       req.body = data
     end
+    raise "post (#{path}) status was #{r.status}" unless r.success?
+    r.body
   end
 
 end                                                             # }}}1

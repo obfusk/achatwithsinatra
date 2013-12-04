@@ -7,7 +7,7 @@ When(%r{^I request `(/.*)`$}) do |path|
 end
 
 Then(/^The JSON response should be:$/) do |json|
-  expect(JSON.parse(@response.body)).to eq(JSON.parse(json))
+  expect(JSON.parse(@response)).to eq(JSON.parse(json))
 end
 
 When(%r{^I listen to `(/.*)` as `(.*)`$}) do |path, id|
