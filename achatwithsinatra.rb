@@ -22,6 +22,14 @@ class AChatWithSinatra < Sinatra::Base
 
   set state: BLANK_STATE[]
 
+  def json_body
+    JSON.parse request.body.read
+  end
+
+  def empty_response
+    ''
+  end
+
   def channel(c)
     settings.state[:channels][c] ||= []
   end
@@ -68,7 +76,7 @@ class AChatWithSinatra < Sinatra::Base
 
     post '/reset' do
       settings.state = BLANK_STATE[]
-      ''  # empty response
+      empty_response
     end
   else
     def new_id(n)
@@ -95,24 +103,24 @@ class AChatWithSinatra < Sinatra::Base
   end
 
   post '/say' do
-    data  = JSON.parse request.body.read
-    user  = get_user data['id']
-    msg   = { nick: user[:nick], message: data['message'] }
-    send_from user, :say, msg
-    ''  # empty response
+    data = json_body; user = get_user data['id']
+    send_from user, :say, nick: user[:nick], message: data['message']
+    empty_response
   end
 
-  post '/nick' do                                               # {{{1
-    data  = JSON.parse request.body.read
-    user  = get_user data['id']
-    from  = user[:nick]
-    res   = set_nick user[:id], data['nick']
-    unless res[:error]
-      msg = { from: from, to: res[:nick] }
-      send_from user, :nick, msg
-    end
+  post '/me' do
+    data = json_body; user = get_user data['id']
+    send_from user, :me, nick: user[:nick], message: data['message']
+    empty_response
+  end
+
+  post '/nick' do
+    data = json_body  ; user  = get_user data['id']
+    from = user[:nick]; res   = set_nick user[:id], data['nick']
+    send_from user, :nick, from: from, to: res[:nick] \
+      unless res[:error]
     res.to_json
-  end                                                           # }}}1
+  end
 
 end
 
