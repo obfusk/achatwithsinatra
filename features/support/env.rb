@@ -42,7 +42,7 @@ module Helpers                                                  # {{{1
 
   def events(str)
     str.split("\n\n").map do |e|
-      m = /^event: (?<event>\w+)\ndata: (?<data>.*)$/.match(e) \
+      m = /\Aevent: (?<event>\w+)\ndata: (?<data>.*)\Z/m.match(e) \
             || raise('event stream parsing failure')
       { event: m[:event], data: JSON.parse(m[:data]) }
     end

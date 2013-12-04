@@ -30,28 +30,49 @@ class AChatWithSinatra < Sinatra::Base
     out << "event: #{event}\ndata: #{data.to_json}\n\n"
   end
 
+  def send_from(user, event, msg)
+    channel(user[:channel]).each { |out| send out, event, msg }
+  end
+
+  def new_user(c)
+    n = settings.state[:n] += 1
+    { id: new_id(n), nick: "guest#{n}", channel: c }
+  end
+
+  def get_user(id)
+    settings.state[:users][id] || raise("unknown id: #{id}")
+  end
+
+  def all_nicks
+    settings.state[:users].values.map { |x| x[:nick] }
+  end
+
+  def set_nick(id, nick)
+    if nick =~ /^guest\d+$/
+      { error: 'is a guest nick' }
+    elsif all_nicks.include? nick
+      { error: 'nick is taken' }
+    else
+      settings.state[:users][id][:nick] = nick; { nick: nick }
+    end
+  end
+
   if DEBUG
     def new_id(n)
       "SecureRandom##{n}"
     end
+
+    before do
+      puts "state: #{settings.state.inspect}"
+    end
+
+    post '/reset' do
+      settings.state = BLANK_STATE[]
+      ''  # empty response
+    end
   else
     def new_id(n)
       SecureRandom.hex 32
-    end
-  end
-
-  def new_user
-    n = settings.state[:n] += 1
-    { id: new_id(n), nick: "guest#{n}" }
-  end
-
-  def get_nick(id)
-    settings.state[:users][id] || raise("unknown id: #{id}")
-  end
-
-  if DEBUG
-    before do
-      puts "state: #{settings.state.inspect}"
     end
   end
 
@@ -68,24 +89,30 @@ class AChatWithSinatra < Sinatra::Base
     content_type 'text/event-stream'
     stream(:keep_open) do |out|
       channel(c) << out; out.callback { channel(c).delete out }
-      u = new_user; settings.state[:users][u[:id]] = u[:nick]
+      u = new_user c; settings.state[:users][u[:id]] = u
       send out, :welcome, u
     end
   end
 
-  post '/say/:channel' do |c|
+  post '/say' do
     data  = JSON.parse request.body.read
-    msg   = { nick: get_nick(data['id']), message: data['message'] }
-    channel(c).each { |out| send out, :say, msg }
+    user  = get_user data['id']
+    msg   = { nick: user[:nick], message: data['message'] }
+    send_from user, :say, msg
     ''  # empty response
   end
 
-  if DEBUG
-    post '/reset' do
-      settings.state = BLANK_STATE[]
-      ''  # empty response
+  post '/nick' do                                               # {{{1
+    data  = JSON.parse request.body.read
+    user  = get_user data['id']
+    from  = user[:nick]
+    res   = set_nick user[:id], data['nick']
+    unless res[:error]
+      msg = { from: from, to: res[:nick] }
+      send_from user, :nick, msg
     end
-  end
+    res.to_json
+  end                                                           # }}}1
 
 end
 
