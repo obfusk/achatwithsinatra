@@ -3,6 +3,7 @@ source 'https://rubygems.org'
 gem 'coffee-script'
 gem 'haml'
 gem 'sinatra'
+gem 'therubyracer'
 gem 'thin'
 
 group :test, :development do
@@ -12,5 +13,6 @@ group :test, :development do
   gem 'em-http-request'
   gem 'faraday'
   gem 'poltergeist'
+  gem 'rake'
   gem 'rspec'
 end
