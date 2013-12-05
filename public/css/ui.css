@@ -1,0 +1,47 @@
+html, body {
+  width:          100%;
+  height:         100%;
+}
+
+body {
+  padding:        20px;
+}
+
+#cont {
+  height:         100%;
+  padding-bottom: 30px;
+}
+
+#messages {
+  border-bottom:  none;
+  height:         100%;
+  overflow-y:     scroll;
+}
+
+#messages, #controls {
+  border:         1px solid gray;
+  padding-left:   15px;
+  padding-right:  15px;
+}
+
+.message {
+  border-bottom:  1px solid gray;
+}
+
+.user {
+  text-align:     right;
+}
+
+#nick, #chan {
+  font-weight:    bold;
+  text-align:     center;
+}
+
+#command, #send {
+  width:          100%;
+}
+
+.nopad {
+  padding-left:   0px;
+  padding-right:  0px;
+}

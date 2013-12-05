@@ -4,25 +4,33 @@ $ ->
   parsed  = (f) -> (e) -> f JSON.parse e.originalEvent.data
 
   push = (t, u, m) ->                                           # {{{1
-    e   = elem 'message', 'li'
-    et  = elem('text').text t
-    eu  = elem('user').text u
-    em  = elem('msg' ).text m
+    e   = elem 'message row'
+    et  = elem('text col-xs-2').text "[#{t.split(' ')[1]}]"
+    eu  = elem('user col-xs-2').text "<#{u}>"
+    em  = elem('msg  col-xs-8').text m
     e.append et, eu, em; msgs.append e
+    msgs.scrollTop msgs[0].scrollHeight
                                                                 # }}}1
 
   $.get('/events').done (data) ->
-    id = data.id; esrc = $ new EventSource data.location
+    id = data.id; nick = null; chan = null
+    esrc = $ new EventSource data.location
+
+    set_nick = (n) -> $('#nick').text nick = n; n
+    set_chan = (c) -> $('#chan').text chan = "@ #{c}"; c
 
     esrc.on 'error', (e) -> console.log 'EventSource error:', e
 
     esrc.on 'welcome', parsed (d) ->
+      set_chan d.channel; set_nick d.nick
       push d.time, '*', "welcome to #{d.channel}, #{d.nick}"
 
     esrc.on 'join', parsed (d) ->
+      set_chan d.channel if d.nick == nick
       push d.time, '*', "#{d.nick} has joined #{d.channel}"
 
     esrc.on 'nick', parsed (d) ->
+      set_nick d.to if d.from == nick
       push d.time, '*', "#{d.from} is now known as #{d.to}"
 
     esrc.on 'say', parsed (d) ->
@@ -32,7 +40,7 @@ $ ->
       push d.time, d.nick, "* #{d.nick} #{d.message}"
 
     $('#controls').submit (e) ->                                # {{{1
-      c = $('#command').val(); $('#command').val('')
+      c = $('#command').val(); $('#command').val ''
       f = (n) -> c.substring(n).trim()
       [path, data] = switch
         when c.indexOf('/join ') == 0 then  ['/join', channel: f 5]

@@ -25,6 +25,7 @@ class AChatWithSinatra < Sinatra::Base
   KEEP_ALIVE      = 15
   LOGIN_TIMEOUT   = 15
 
+  CSS             = %w{ /css/bootstrap.min.css /css/ui.css }
   SCRIPTS         = %w{
     /js/EventSource.js /js/jquery.min.js /__coffee__/ui.js
   }

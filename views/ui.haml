@@ -6,9 +6,16 @@
            content: 'text/html;charset=utf-8' }
     - SCRIPTS.each do |src|
       %script{ type: 'text/javascript', src: src }
+    - CSS.each do |src|
+      %link{ rel: 'stylesheet', type: 'text/css', href: src }
   %body
-    %form{ id: 'controls' }
-      %label{ for: 'command' } Command:
-      %input{ type: 'text', id: 'command', name: 'command' }
-      %input{ type: 'submit', id: 'send', value: 'Send' }
-    %ul#messages
+    #cont.container
+      #messages
+      %form#controls
+        .row
+          #nick.col-xs-2 $nick
+          #chan.col-xs-2 @ $channel
+          .col-xs-7
+            %input#command{ type: 'text' }
+          .col-xs-1.nopad
+            %input#send{ type: 'submit', value: 'Send' }

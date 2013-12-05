@@ -175,7 +175,7 @@ module ChatHelpers                                              # {{{1
 
   def parse_ui_messages
     find('#messages').all('.message').map do |msg|
-      { user: msg.find('.user').text,
+      { user: msg.find('.user').text.sub(/^</,'').sub(/>$/,''),
         msg:  msg.find('.msg' ).text }
     end
   end
