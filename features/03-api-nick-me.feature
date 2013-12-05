@@ -6,13 +6,13 @@ Feature: api: nick and me
     And   I listen to `/events` as `devnull`
     And   I post JSON to `/me`:
       """
-      { "id": "SecureRandom#1", "message": "Waves" }
+      { "id": "SecureRandom-1", "message": "Waves" }
       """
     And   I wait for listener `devnull`
     Then  The events of `devnull` should be:
       """
       event: welcome
-      data: { "id": "SecureRandom#1", "nick": "guest1",
+      data: { "id": "SecureRandom-1", "nick": "guest1",
               "channel": "devnull" }
 
       event: join
@@ -28,17 +28,17 @@ Feature: api: nick and me
     And   I listen to `/events` as `devnull`
     And   I post JSON to `/nick`:
       """
-      { "id": "SecureRandom#1", "nick": "felix" }
+      { "id": "SecureRandom-1", "nick": "felix" }
       """
     And   I post JSON to `/say`:
       """
-      { "id": "SecureRandom#1", "message": "Hello" }
+      { "id": "SecureRandom-1", "message": "Hello" }
       """
     And   I wait for listener `devnull`
     Then  The events of `devnull` should be:
       """
       event: welcome
-      data: { "id": "SecureRandom#1", "nick": "guest1",
+      data: { "id": "SecureRandom-1", "nick": "guest1",
               "channel": "devnull" }
 
       event: join

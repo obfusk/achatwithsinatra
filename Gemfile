@@ -12,7 +12,8 @@ group :test, :development do
   gem 'cucumber'
   gem 'em-http-request'
   gem 'faraday'
-  gem 'poltergeist'
+# gem 'poltergeist'
   gem 'rake'
   gem 'rspec'
+  gem 'selenium-webdriver'
 end

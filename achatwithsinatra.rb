@@ -2,7 +2,7 @@
 #
 # File        : achatwithsinatra.rb
 # Maintainer  : Felix C. Stegerman <flx@obfusk.net>
-# Date        : 2013-12-03
+# Date        : 2013-12-05
 #
 # Copyright   : Copyright (C) 2013  Felix C. Stegerman
 # Licence     : GPLv2
@@ -22,7 +22,15 @@ class AChatWithSinatra < Sinatra::Base
   BLANK_STATE     = -> { { channels: {}, users: {}, n: 0 } }
   DEBUG           = ENV['ACHATWITHSINATRA_CUKE'] == 'yes'
   DEFAULT_CHANNEL = 'devnull'
+  KEEP_ALIVE      = 15
+  LOGIN_TIMEOUT   = 15
 
+  SCRIPTS         = %w{
+    /js/EventSource.js /js/jquery.min.js /__coffee__/ui.js
+  }
+
+  set :server, :thin
+  set :show_exceptions, :after_handler
   set state: BLANK_STATE[]
 
   def json_body
@@ -33,6 +41,16 @@ class AChatWithSinatra < Sinatra::Base
     ''
   end
 
+  def send(out, event, data = {})
+    d = data.merge time: Time.new.strftime('%F %T')
+    out << "event: #{event}\ndata: #{d.to_json}\n\n"
+    puts "event: #{event}\ndata: #{d.to_json}\n\n" if DEBUG
+  end
+
+  def send_from(user, event, msg)
+    channel(user[:channel]).each { |out| send out, event, msg }
+  end
+
   def channel(c)
     settings.state[:channels][c] ||= []
   end
@@ -40,28 +58,38 @@ class AChatWithSinatra < Sinatra::Base
   def set_channel(user, c)
     unless (old = user[:channel]) == c
       user[:channel] = c
-      channel(old).delete user[:_out]
-      channel(c) << user[:_out]
+      channel(old).delete user[:_conn]
+      channel(c) << user[:_conn]
     end
   end
 
   def cleanup(user)
-    puts "cleaning up #{user.inspect}"
-    channel(user[:channel]).delete user[:_out]
+    user[:_timer].cancel
+    channel(user[:channel]).delete user[:_conn]
+    rm_user user
+  end
+
+  def rm_user(user)
     settings.state[:users].delete user[:id]
   end
 
-  def send(out, event, data)
-    out << "event: #{event}\ndata: #{data.to_json}\n\n"
+  def add_user
+    user = new_user; settings.state[:users][user[:id]] = user
+    EM::Timer.new(LOGIN_TIMEOUT) { rm_user user unless user[:_conn] }
+    user
   end
 
-  def send_from(user, event, msg)
-    channel(user[:channel]).each { |out| send out, event, msg }
+  def connect_user(user, out)
+    c = DEFAULT_CHANNEL
+    t = EM::PeriodicTimer.new(KEEP_ALIVE) { send out, :ping }
+    user.merge! _conn: out, _timer: t, channel: c
+    channel(c) << out; out.callback { cleanup user }
+    [user, c]
   end
 
-  def new_user(c, out)
+  def new_user
     n = settings.state[:n] += 1
-    { id: new_id(n), nick: "guest#{n}", channel: c, _out: out }
+    { id: new_id(n), nick: "guest#{n}" }
   end
 
   def get_user(id)
@@ -78,7 +106,8 @@ class AChatWithSinatra < Sinatra::Base
     elsif all_nicks.include? nick
       { error: 'nick is taken' }
     else
-      settings.state[:users][id][:nick] = nick; { nick: nick }
+      settings.state[:users][id][:nick] = nick
+      { nick: nick }
     end
   end
 
@@ -86,13 +115,25 @@ class AChatWithSinatra < Sinatra::Base
     h.reject { |x| x.to_s.start_with? '_' }
   end
 
+  def join_say_me(event, &b)
+    data = json_body; user = get_user data['id']; d = b[user, data]
+    send_from user, event, { nick: user[:nick] }.merge(d)
+    empty_response
+  end
+
   if DEBUG
     def new_id(n)
-      "SecureRandom##{n}"
+      "SecureRandom-#{n}"
     end
 
     before do
-      puts "state: #{settings.state.inspect}"
+      s = settings.state
+      puts "n: #{s[:n]}; channels: #{s[:channels].keys*', '}"
+      puts 'users:'
+      s[:users].each do |k,v|
+        v2 = v.merge _conn: v[:_conn].class, _timer: v[:_timer].class
+        puts "  #{k} => #{v2}"
+      end
     end
 
     post '/reset' do
@@ -105,47 +146,66 @@ class AChatWithSinatra < Sinatra::Base
     end
   end
 
+  get '/' do
+    haml :ui
+  end
+
   get '/channels' do
     content_type :json
     settings.state[:channels].keys.sort.to_json
   end
 
   get '/events' do
-    c = DEFAULT_CHANNEL
+    content_type :json
+    id = add_user[:id]
+    { location: "/events/#{id}", id: id }.to_json
+  end
+
+  get '/events/:id' do |id|
+    user = get_user id
     content_type 'text/event-stream'
     stream(:keep_open) do |out|
-      user = new_user c, out; settings.state[:users][user[:id]] = user
-      channel(c) << out; out.callback { cleanup user }
+      user, ch = connect_user user, out
       send out, :welcome, sanitize(user)
-      send_from user, :join, nick: user[:nick], channel: c
+      send_from user, :join, nick: user[:nick], channel: ch
     end
   end
 
   post '/join' do
-    data = json_body; user = get_user data['id']
-    set_channel user, data['channel']
-    send_from user, :join, nick: user[:nick], channel: data['channel']
-    empty_response
+    join_say_me(:join) do |user, data|
+      set_channel user, data['channel']
+      { channel: data['channel'] }
+    end
   end
 
   post '/say' do
-    data = json_body; user = get_user data['id']
-    send_from user, :say, nick: user[:nick], message: data['message']
-    empty_response
+    join_say_me(:say) do |user, data|
+      { message: data['message'] }
+    end
   end
 
   post '/me' do
-    data = json_body; user = get_user data['id']
-    send_from user, :me, nick: user[:nick], message: data['message']
-    empty_response
+    join_say_me(:me) do |user, data|
+      { message: data['message'] }
+    end
   end
 
   post '/nick' do
+    content_type :json
     data = json_body  ; user  = get_user data['id']
     from = user[:nick]; res   = set_nick user[:id], data['nick']
     send_from user, :nick, from: from, to: res[:nick] \
       unless res[:error]
     res.to_json
+  end
+
+  get '/__coffee__/:name.js' do |name|
+    content_type :js
+    coffee :"coffee/#{name}"
+  end
+
+  error UnknownUser do
+    "Unknown user: #{env['sinatra.error'].message}\n"
   end
 
 end

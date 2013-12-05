@@ -7,11 +7,11 @@ Feature: api: channels
     And   I listen to `/events` as `bar`
     And   I post JSON to `/join`:
       """
-      { "id": "SecureRandom#1", "channel": "foo" }
+      { "id": "SecureRandom-1", "channel": "foo" }
       """
     And   I post JSON to `/join`:
       """
-      { "id": "SecureRandom#2", "channel": "bar" }
+      { "id": "SecureRandom-2", "channel": "bar" }
       """
     And   I wait for listener `foo`
     And   I wait for listener `bar`

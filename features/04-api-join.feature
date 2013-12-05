@@ -6,21 +6,21 @@ Feature: api: join
     And   I listen to `/events` as `devnull`
     And   I post JSON to `/say`:
       """
-      { "id": "SecureRandom#1", "message": "Hi devnull" }
+      { "id": "SecureRandom-1", "message": "Hi devnull" }
       """
     And   I post JSON to `/join`:
       """
-      { "id": "SecureRandom#1", "channel": "devrandom" }
+      { "id": "SecureRandom-1", "channel": "devrandom" }
       """
     And   I post JSON to `/say`:
       """
-      { "id": "SecureRandom#1", "message": "Hi devrandom" }
+      { "id": "SecureRandom-1", "message": "Hi devrandom" }
       """
     And   I wait for listener `devnull`
     Then  The events of `devnull` should be:
       """
       event: welcome
-      data: { "id": "SecureRandom#1", "nick": "guest1",
+      data: { "id": "SecureRandom-1", "nick": "guest1",
               "channel": "devnull" }
 
       event: join

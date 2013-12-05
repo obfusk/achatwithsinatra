@@ -1,0 +1,14 @@
+!!!
+%html
+  %head
+    %title A Chat with Sinatra
+    %meta{ 'http-equiv' => 'Content-Type',
+           content: 'text/html;charset=utf-8' }
+    - SCRIPTS.each do |src|
+      %script{ type: 'text/javascript', src: src }
+  %body
+    %form{ id: 'controls' }
+      %label{ for: 'command' } Command:
+      %input{ type: 'text', id: 'command', name: 'command' }
+      %input{ type: 'submit', id: 'send', value: 'Send' }
+    %ul#messages
