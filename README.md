@@ -2,10 +2,10 @@
 
     File        : README.md
     Maintainer  : Felix C. Stegerman <flx@obfusk.net>
-    Date        : 2013-12-03
+    Date        : 2013-12-05
 
     Copyright   : Copyright (C) 2013  Felix C. Stegerman
-    Version     : v0.0.1
+    Version     : v0.2.0
 
 []: }}}1
 
@@ -29,29 +29,22 @@
 ## Specs & Docs
 
     $ rake cuke
-    $ rake spec     # TODO
-    $ rake jasmine  # TODO
 
 ## TODO
 
-  * features, specs, docs, build
-  * ...
+  * show users, channels
+  * quit message on join/close
+  * handle GET/POST success/failure
+  * EventSource polyfill for android browser?
 
 ## License
 
-  * remy's EventSource polyfill [1]: MIT [2];
-  * everything else: GPLv2 [3].
+  GPLv2 [1].
 
 ## References
 []: {{{1
 
-  [1] remy's EventSource polyfill
-  --- https://github.com/remy/polyfills/blob/master/EventSource.js
-
-  [2] remy's EventSource polyfill license
-  --- https://github.com/remy/polyfills/blob/master/MIT-LICENCE.txt
-
-  [3] GNU General Public License, version 2
+  [1] GNU General Public License, version 2
   --- http://www.opensource.org/licenses/GPL-2.0
 
 []: }}}1

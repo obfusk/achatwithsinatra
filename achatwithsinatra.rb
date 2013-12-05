@@ -26,9 +26,7 @@ class AChatWithSinatra < Sinatra::Base
   LOGIN_TIMEOUT   = 15
 
   CSS             = %w{ /css/bootstrap.min.css /css/ui.css }
-  SCRIPTS         = %w{
-    /js/EventSource.js /js/jquery.min.js /__coffee__/ui.js
-  }
+  SCRIPTS         = %w{ /js/jquery.min.js /__coffee__/ui.js }
 
   set :server, :thin
   set :show_exceptions, :after_handler
