@@ -18,6 +18,7 @@ require 'sinatra/base'
 class AChatWithSinatra < Sinatra::Base
 
   class UnknownUser < RuntimeError; end
+  class EmptyChannel < RuntimeError; end
 
   BLANK_STATE     = -> { { channels: {}, users: {}, n: 0 } }
   DEBUG           = ENV['ACHATWITHSINATRA_CUKE'] == 'yes'
@@ -55,6 +56,7 @@ class AChatWithSinatra < Sinatra::Base
   end
 
   def set_channel(user, c)
+    raise EmptyChannel if c.empty?
     unless (old = user[:channel]) == c
       user[:channel] = c
       channel(old).delete user[:_conn]
@@ -174,7 +176,7 @@ class AChatWithSinatra < Sinatra::Base
 
   post '/join' do
     join_say_me(:join) do |user, data|
-      set_channel user, data['channel']
+      set_channel user, data['channel'].strip
       { channel: data['channel'] }
     end
   end
@@ -194,7 +196,7 @@ class AChatWithSinatra < Sinatra::Base
   post '/nick' do
     content_type :json
     data = json_body  ; user  = get_user data['id']
-    from = user[:nick]; res   = set_nick user[:id], data['nick']
+    from = user[:nick]; res   = set_nick user[:id], data['nick'].strip
     send_from user, :nick, from: from, to: res[:nick] \
       unless res[:error]
     res.to_json
@@ -207,6 +209,10 @@ class AChatWithSinatra < Sinatra::Base
 
   error UnknownUser do
     "Unknown user: #{env['sinatra.error'].message}\n"
+  end
+
+  error EmptyChannel do
+    "Empty channel\n"
   end
 
 end
