@@ -19,7 +19,7 @@ class: center, middle
 
 Felix C. Stegerman `<flx@obfusk.net>`
 
-.small[2013-12-03]
+.small[2013-12-05]
 
 ---
 
@@ -102,20 +102,26 @@ See also the chromium/firefox developer tools.
 # HTTP Methods and REST
 
 ```ruby
-get '/' do
-  # show a resource
+get '/foos' do
+  # show a resource (e.g. list of foos)
+  haml :foos, locals: { foos: Foo.all }
 end
 
-post '/' do
+get '/foo/:id' do
+  # show a resource (e.g. specific foo)
+  Foo.find(params[:id]).to_json
+end
+
+post '/foo' do
   # submit data (e.g. form) or create a resource
 end
 
-put '/' do
+put '/foo/:id' do
   # create or update a resource
 end
 
-delete '/' do
-  # destroy a resource
+delete '/foo/:id' do
+  # remove a resource
 end
 ```
 
@@ -124,8 +130,8 @@ end
 # Routes, Views, Templates
 
 ```ruby
-get '/hello/:name' do |n|
-  "Hello #{n}!"
+get '/hello/:name' do |name|
+  "Hello #{name}!"
 end
 ```
 
@@ -136,8 +142,14 @@ end
 ```
 
 ```ruby
-get '/' do
+get '/time' do
   erb 'The time is: <%= Time.now %>'
+end
+```
+
+```ruby
+before do
+  puts "the current request is: #{request.inspect}"
 end
 ```
 
@@ -252,6 +264,7 @@ class: center, middle
 
 * http://www.sinatrarb.com
 * http://en.wikipedia.org/wiki/Sinatra_%28software%29
+* http://sinatra-book.gittr.com
 
 <!-- -->
 
