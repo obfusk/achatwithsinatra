@@ -27,7 +27,7 @@ Then(/^The events of `(\w+)` should be:$/) do |id, str|
 end
 
 When(/^I go to the chat UI$/) do
-  visit '/'
+  ui_chat
 end
 
 When(/^I set my nick to `(.*)`/) do |nick|

@@ -101,7 +101,9 @@ class AChatWithSinatra < Sinatra::Base
   end
 
   def set_nick(id, nick)
-    if nick =~ /^guest\d+$/
+    if nick.empty?
+      { error: 'empty nick' }
+    elsif nick =~ /^guest\d+$/
       { error: 'is a guest nick' }
     elsif all_nicks.include? nick
       { error: 'nick is taken' }

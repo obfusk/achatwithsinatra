@@ -10,8 +10,7 @@
 # --                                                            ; }}}1
 
 require 'capybara/cucumber'
-# require 'capybara/poltergeist'
-# require 'capybara/webkit'
+require 'capybara/poltergeist'
 require 'childprocess'
 require 'em-http'
 require 'faraday'
@@ -112,19 +111,29 @@ module ChatHelpers                                              # {{{1
     end # .reject { |e| e[:event] == 'ping' } # TODO
   end                                                           # }}}2
 
+  def ui_chat
+    # PhantomJS + EventSource blocks w/ visit('/') :-(
+    visit 'about:blank'
+    page.execute_script "document.location = \"#{host}/\""
+    find '.msg', text: 'welcome to devnull'
+  end
+
   def ui_set_nick(nick)
     fill_in 'command', with: "/nick #{nick}"
     click_on 'send'
+    find '.msg', text: "is now known as #{nick}"
   end
 
   def ui_join(channel)
     fill_in 'command', with: "/join #{channel}"
     click_on 'send'
+    find '.msg', text: "has joined #{channel}"
   end
 
   def ui_say(msg)
     fill_in 'command', with: msg
     click_on 'send'
+    find '.msg', text: msg
   end
 
   def api_listen_nick_join_say(nick, n, ch, msg)                # {{{2
@@ -194,9 +203,8 @@ class MyWorld                                                   # {{{1
 
   def initialize(port)
     @port                       = port
-    Capybara.app_host           = host
     Capybara.run_server         = false
-    # Capybara.javascript_driver  = :poltergeist
+    Capybara.javascript_driver  = :poltergeist
   end
 end                                                             # }}}1
 
