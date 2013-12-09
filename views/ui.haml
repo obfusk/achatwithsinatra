@@ -19,3 +19,19 @@
             %input#command{ type: 'text' }
           .col-xs-1.nopad
             %input#send{ type: 'submit', value: 'Send' }
+      #commands
+        .row
+          .col-xs-12
+            Commands:
+            %code&= '/join <channel>'
+            ,
+            %code&= '/nick <nick>'
+            ,
+            %code&= '/me <message>'
+            ,
+            %code&= '/say <message> | <message>'
+      #code
+        .row
+          .col-xs-12
+            &= '-->'
+            %a{ href: CODE_LINK }&= CODE_LINK

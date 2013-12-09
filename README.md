@@ -2,10 +2,10 @@
 
     File        : README.md
     Maintainer  : Felix C. Stegerman <flx@obfusk.net>
-    Date        : 2013-12-05
+    Date        : 2013-12-09
 
     Copyright   : Copyright (C) 2013  Felix C. Stegerman
-    Version     : v0.2.0
+    Version     : v0.2.1
 
 []: }}}1
 
@@ -23,6 +23,9 @@
 
   It's also running on
   [heroku] (http://achatwithsinatra.herokuapp.com).
+
+  The code is on
+  [github] (https://github.com/obfusk/achatwithsinatra).
 
 []: }}}1
 

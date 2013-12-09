@@ -2,7 +2,7 @@
 #
 # File        : achatwithsinatra.rb
 # Maintainer  : Felix C. Stegerman <flx@obfusk.net>
-# Date        : 2013-12-05
+# Date        : 2013-12-09
 #
 # Copyright   : Copyright (C) 2013  Felix C. Stegerman
 # Licence     : GPLv2
@@ -25,6 +25,8 @@ class AChatWithSinatra < Sinatra::Base
   DEFAULT_CHANNEL = 'devnull'
   KEEP_ALIVE      = 15
   LOGIN_TIMEOUT   = 15
+
+  CODE_LINK       = 'https://github.com/obfusk/achatwithsinatra'
 
   CSS             = %w{ /css/bootstrap.min.css /css/ui.css }
   SCRIPTS         = %w{ /js/jquery.min.js /__coffee__/ui.js }

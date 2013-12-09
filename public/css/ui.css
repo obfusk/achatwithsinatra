@@ -9,7 +9,7 @@ body {
 
 #cont {
   height:         100%;
-  padding-bottom: 30px;
+  padding-bottom: 70px;
 }
 
 #messages {
@@ -18,7 +18,7 @@ body {
   overflow-y:     scroll;
 }
 
-#messages, #controls {
+#messages, #controls, #commands, #code {
   border:         1px solid gray;
   padding-left:   15px;
   padding-right:  15px;
@@ -44,4 +44,8 @@ body {
 .nopad {
   padding-left:   0px;
   padding-right:  0px;
+}
+
+#commands, #code {
+  text-align:     center;
 }
